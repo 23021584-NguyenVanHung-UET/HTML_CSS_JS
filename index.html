@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stateless Login Demo</title>
+</head>
+<body>
+  <h1>Login Demo (JWT + Node.js)</h1>
+
+  <div>
+    <input id="username" placeholder="Username" value="alice">
+    <input id="password" type="password" placeholder="Password" value="123456">
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <button onclick="getProfile()">Get Profile</button>
+  </div>
+
+  <pre id="output"></pre>
+
+  <script>
+    let token = null;
+    const API_URL = "http://localhost:3000"; // server Node.js
+
+    async function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch(`${API_URL}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (data.token) {
+          token = data.token;
+          document.getElementById("output").innerText =
+            "✅ Login success!\nToken:\n" + token;
+        } else {
+          document.getElementById("output").innerText =
+            "❌ Login failed: " + JSON.stringify(data);
+        }
+      } catch (err) {
+        document.getElementById("output").innerText = "⚠️ Error: " + err;
+      }
+    }
+
+    async function getProfile() {
+      if (!token) {
+        document.getElementById("output").innerText = "⚠️ You must login first!";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/profile`, {
+          method: "GET",
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        const data = await res.json();
+        document.getElementById("output").innerText =
+          "📌 Profile:\n" + JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById("output").innerText = "⚠️ Error: " + err;
+      }
+    }
+  </script>
+</body>
+</html>
